@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # --- Configuration ---
-BASE_URL="https://raw.githubusercontent.com/Cheddabob420/Code-Collections/master/setup-bash-scripts/scripts"
+BASE_URL="https://raw.githubusercontent.com/Cheddabob420/Code-Collections/master/setup-bash-scripts/scripts/"
 
 # Create a secure temporary directory
 # 'mktemp -d' creates a unique folder in /tmp/
