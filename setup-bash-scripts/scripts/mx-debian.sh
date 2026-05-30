@@ -6,7 +6,10 @@ echo "Installing core tools..."
 # Install the basics
 
 sudo apt update && sudo apt dist-upgrade -y
-sudo apt install -y fastfetch git nano wget curl tree gh gpg apt-transport-https cowsay ssh shellcheck
+sudo apt install -y micro nano tree cowsay shellcheck starship ossp-uuid wget curl gh gpg apt-transport-https ssh 
+sudo apt install -y tigervnc-standalone-server
+sudo apt install fastfetch -y || sudo apt install neofetch -y
+
 
 # Add bash language server for kate
 sudo apt install npm -y
@@ -58,6 +61,9 @@ mkdir -v $HOME/Projects/Lua
 mkdir -v $HOME/Projects/Python
 mkdir -v $HOME/Projects/MicroWorks
 mkdir -v $HOME/Projects/HTML
+mkdir -v $HOME/Projects/C
+mkdir -v $HOME/Projects/Jupyter
+
 
 # Note: Use 'EOF' to prevent the script from expanding $HOME or $PS1 now
 cat << 'EOF' > "$BASHRC"
@@ -88,45 +94,17 @@ alias python='$HOME/.venv/bin/python3'
 alias python3='$HOME/.venv/bin/python3'
 alias pyven='source $HOME/.venv/bin/activate'
 
-### Detect Linux Distro ###
-if command -v grep &> /dev/null && [ -f /etc/os-release ]; then
-    distro_id=$(grep '^ID=' /etc/os-release | cut -d= -f2 | tr -d'"')
-else
-    distro_id="unknown"
-fi
-
-### Set Distro Icon ###
-case "$distro_id" in
-  kali) DISTRO_ICON="<U+F327>" ;;   # Kali Linux
-  arch*) DISTRO_ICON="<U+E732>" ;;   # Arch Linux
-  ubuntu) DISTRO_ICON="<U+F31B>" ;; # Ubuntu
-  debian) DISTRO_ICON="<U+F306>" ;; # Debian
-  fedora) DISTRO_ICON="<U+F30A>" ;; # Fedora
-  alpine) DISTRO_ICON="<U+F300>" ;; # Alpine
-  void) DISTRO_ICON="<U+F32E>" ;;   # Void Linux
-  opensuse*|sles) DISTRO_ICON="<U+F314>" ;; # openSUSE
-  gentoo) DISTRO_ICON="<U+F30D>" ;; # Gentoo
-  nixos) DISTRO_ICON="<U+F313>" ;; # NixOS
-  linuxmint) DISTRO_ICON="<U+F17C>" ;;  # Mint
-  *) DISTRO_ICON=" " ;;                
-esac
-
-### Username & Path Logic ###
 
 USER_NAME="$(whoami)"
 # Desktop/Standard Linux paths
 SHELL_RC="$HOME/.shell_rc_content"
 ALIASES="$HOME/.aliases"
 
-### Build PS1 with proper escaping ###
-PS1='\[\e[1;32m\]╭─\[\e[1;34m\][\[\e[1;36m\]'"${USER_NAME}"'\[\e[1;33m\] '"${DISTRO_ICON}"' \[\e[1;36m\]\h\[\e[1;34m\]] [\[\e[1;33m\]\w\[\e[1;34m\]]\[\e[0m\]
-\[\e[1;32m\]╰─❯\[\e[0m\] '
-
 ### Source Configs ###
 [[ -f "$SHELL_RC" ]] && source "$SHELL_RC"
 [[ -f "$ALIASES" ]] && source "$ALIASES"
 
-
+eval "$(starship init bash)"
 # Add fastfetch to the bottom for the sys info art
 fastfetch
 EOF
@@ -240,20 +218,13 @@ echo ""
 # Configure Github
 gh auth login
 
+source ~/.bashrc
+
+wait
+
 echo "Bashrc Setup Complete!"
 
 
 
-
-#           ---Cowsay random cow headder---
-#date +"%I:%M %P | %A, %B %d, %Y" | cowsay -f dragon-and-cow
-# 1. Get the list of cows
-# 2. Use 'grep -v' to remove the header line
-# 3. Use 'xargs' to turn the grid into a single column (removes extra spaces)
-# 4. Use 'shuf' to pick one
-#RANDOM_COW=$(cowsay -l | grep -v "Cow files in" | xargs -n 1 | shuf -n 1)
-
-# Only run cowsay if RANDOM_COW is not empty to avoid errors
-#if [ -n "$RANDOM_COW" ]; then
 #    date +"%I:%M %P | %A, %B %d, %Y" | cowsay -f "$RANDOM_COW"
 #fi
