@@ -1,63 +1,65 @@
-#!/bin/bash
+#!/data/data/com.termux/files/usr/bin/bash
 
-echo "<----Termux New Install Setup Script---->"
+echo " =========================================="
+echo "         Termux New Install Setup Script"
+echo " =========================================="
+sleep 3
 
-# --- 1. Package Installation ---
+# <--- Core tools and other dependencies --->
 echo "Installing core tools..."
-
-#update
+sleep 2
 pkg update && pkg upgrade -y
-#Install Text editor and tools
 pkg i micro nano tree cowsay shellcheck starship ossp-uuid -y
-#IOT and git
-pkg i git wget curl gh gpg apt-transport-https ssh  -y
-#vnc and other tools
+pkg i git wget curl gh gpg apt-transport-https openssh  -y
 pkg i tigervnc-standalone-server -y
-#Fastfetch or neofetch 
 pkg i fastfetch -y || pkg i neofetch -y
-# Add bash language server for kate
 pkg i npm -y
 npm install -g bash-language-server 
+pkg i termux-api
+termux-setup-storage
+pkg i proot-distro x11-repo termux-x11-nightly android-tools -y
 
 
-# Setup Get Nerd Font
+#   <---setup proot-distro--->
+proot-distro install debian
+echo "Executing internal desktop environment installation..."
+proot-distro login debian --shared-tmp -- bash /data/data/com.termux/files/home/proot-setup.sh
+wait
+echo "Cleaning up setup scripts..."
+sleep 2
+rm ~/proot-setup.sh
+
+
+# <---Setup Nerd Font--->
 PREFIX='/data/data/com.termux/files/usr'
 git clone https://github.com/arnavgr/termux-nf.git
 cd termux-nf
 bash install.sh
 getnf -i Profont
-             
-# Check if FONT_DIR is set
 if [ -z "$FONT_DIR" ]; then     
     FONT_DIR="$PREFIX/share/termux-nf/fonts"  
 fi
 cp "$FONT_DIR/ProFont/ProFontIIxNerdFontMono-Regular.ttf" "$HOME/.termux/font.ttf" || { echo "${RED}Failed to apply font${RESET}"; exit 1; }
-
 echo "Nerd Font Installed"
+sleep 2
 
-#Configure Starship
+
+# <---Configure Starship--->
 cd "$HOME" || exit
 mkdir -p ~/.config && touch ~/.config/starship.toml
 
-# --- Setup Python Environment
+
+# <---Setup Python Environment--->
 cd "$HOME" || exit
 python_env="$HOME/.venv"
-
 create_venv() {
     echo "Creating python environment at $python_env..."
-    
-    # Try creating the venv
     if ! python3 -m venv "$python_env" 2>/dev/null; then
         echo "venv module missing. Attempting to install the required system package..."
-        
-        # 1. Get the version (e.g., "3.11")
         PY_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
         VENV_PKG="python${PY_VER}-venv"
-        
-        # 2. Attempt to install the specific package
         echo "Running: sudo apt update && sudo apt install -y $VENV_PKG"
         if sudo apt update && sudo apt install -y "$VENV_PKG"; then
-            # 3. Retry the venv creation
             python3 -m venv "$python_env"
         else
             echo "Error: Failed to install $VENV_PKG. Please install it manually."
@@ -65,7 +67,6 @@ create_venv() {
         fi
     fi
 }
-
 if [[ -d "$python_env" ]]; then
     echo "Python environment exists at $python_env"
     read -rp "Would you like to reinstall it? (y/n): " yn
@@ -82,42 +83,27 @@ if [[ -d "$python_env" ]]; then
 else
     create_venv
 fi
-# Install VS Code
 
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
 
-echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
-
-rm -f packages.microsoft.gpg
-sudo apt update
-sudo apt install -y code
-
-echo "VS Code installation complete! Run it by typing 'code' in your terminal."
-
-wait
-
-# --- Configuration Setup ---
-BASHRC="$HOME/.bashrc"
-echo "Configuring $BASHRC..."
-
-# Create a backup with a timestamp
-cp "$BASHRC" "$BASHRC.bak.$(date +%F_%T)"
-
-# Create some needed directorys
+# <---Create some needed directories--->
 mkdir -v $HOME/Projects
 mkdir -v $HOME/Programs
 mkdir -v $HOME/Projects/Lua
 mkdir -v $HOME/Projects/Python
 mkdir -v $HOME/Projects/MicroWorks
 mkdir -v $HOME/Projects/HTML
+mkdir -v $HOME/Projects/C
+mkdir -v $HOME/Projects/Jupyter
 
-# Note: Use 'EOF' to prevent the script from expanding $HOME or $PS1 now
+# <---Setup .bashrc--->
+BASHRC="$HOME/.bashrc"
+echo "Configuring $BASHRC..."
+cp "$BASHRC" "$BASHRC.bak.$(date +%F_%T)"
 cat << 'EOF' > "$BASHRC"
 # ~/.bashrc - Custom Environment
 
 # UI/UX Improvements
-export EDITOR='micro'
+export EDITOR='nano'
 export HISTSIZE=10000
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
@@ -132,7 +118,7 @@ alias gst='git status'
 alias gp='git pull'
 
 # Update command alias
-alias updater='sudo apt update && sudo apt dist-upgrade -y && sudo apt autoremove -y'
+alias updater='sudo apt update && sudo apt dist-upgrade -y && flatpak update'
 alias autoremove='sudo apt autoremove -y'
 
 # Python aliases
@@ -142,52 +128,81 @@ alias python3='$HOME/.venv/bin/python3'
 alias pyven='source $HOME/.venv/bin/activate'
 
 
+USER_NAME="$(whoami)"
+# Desktop/Standard Linux paths
+SHELL_RC="$HOME/.shell_rc_content"
+ALIASES="$HOME/.aliases"
 
-### Detection Function ###
-# Returns 0 (true) if running in Termux, 1 (false) otherwise
-is_termux() {
-    [[ -n "$PREFIX" && "$PREFIX" == */com.termux/* ]]
+### Source Configs ###
+[[ -f "$SHELL_RC" ]] && source "$SHELL_RC"
+[[ -f "$ALIASES" ]] && source "$ALIASES"
+
+eval "$(starship init bash)"
+
+
+start_desktop(){
+    # Starup
+    killall -9 termux-x11 Xwayland 2>/dev/null
+    rm -rf /tmp/.X11-unix/X1 2>/dev/null
+    
+    termux-x11 :1 -xstartup "echo launcher" &
+    sleep 1.5
+    
+    am start --user 0 -n com.termux.x11/com.termux.x11.MainActivity > /dev/null 2>&1
+    
+    proot-distro login debian --shared-tmp --env DISPLAY=:1 -- dbus-launch --exit-with-session xfce4-session
+    
+    # Shutdown
+    echo "XFCE4 session closed. Initiating container shutdown..."
+    
+    killall -9 termux-x11 Xwayland 2>/dev/null
+    
+    kill -9 $(pgrep -f "proot") 2>/dev/null
+    
+    rm -rf /tmp/.X11-unix/X1 2>/dev/null
+    
+    echo "Container and X11 server stopped successfully. Safe to close Termux."
 }
 
-### Username & Path Logic ###
-if is_termux; then
-    USER_NAME="cogy"
-    # Termux specific paths
-    SHELL_RC="/data/data/com.termux/files/home/.shell_rc_content"
-    ALIASES="/data/data/com.termux/files/home/.aliases"
-else
-    USER_NAME="$(whoami)"
-    # Desktop/Standard Linux paths
-    SHELL_RC="$HOME/.shell_rc_content"
-    ALIASES="$HOME/.aliases"
-fi
+stop_desktop() {
+    echo "Force shutting down PRoot and X11..."
+    killall -9 termux-x11 Xwayland 2>/dev/null
+    kill -9 $(pgrep -f "proot") 2>/dev/null
+    rm -rf /tmp/.X11-unix/X1 2>/dev/null
+    echo "Done."
+}
 
-
-alias pyven='source ~/.venv/bin/activate'
-alias python='python3'
-source ~/.aliases
-eval "$(starship init bash)"
-# Add fastfetch to the bottom for the sys info art
 fastfetch
 EOF
 
-# ---  Finalization ---
-echo "Success! Your environment is ready."
-
-echo "Bashrc Setup Complete!"
 
 
 
+#   <---this is for connecting to the phone through wierless adb--->
 
-#           ---Cowsay random cow headder---
-#date +"%I:%M %P | %A, %B %d, %Y" | cowsay -f dragon-and-cow
-# 1. Get the list of cows
-# 2. Use 'grep -v' to remove the header line
-# 3. Use 'xargs' to turn the grid into a single column (removes extra spaces)
-# 4. Use 'shuf' to pick one
-#RANDOM_COW=$(cowsay -l | grep -v "Cow files in" | xargs -n 1 | shuf -n 1)
+#adb pair IP_ADDRESS:PORT PAIRING_CODE
+#adb connect IP_ADDRESS:CONNECTION_PORT
+#   <---                --->
 
-# Only run cowsay if RANDOM_COW is not empty to avoid errors
-#if [ -n "$RANDOM_COW" ]; then
-#    date +"%I:%M %P | %A, %B %d, %Y" | cowsay -f "$RANDOM_COW"
-#fi
+#   <---this is for using x11 to display applications running in native termux--->
+# 1. Start the Termux-X11 display server in the background
+#termux-x11 :1 &
+
+# 2. Tell Termux to use this new display session
+#export DISPLAY=:1
+
+# 3. Launch your X11 application
+#chrome &
+
+####you can also use this function in a bashrc file to call it from the cli####
+#start_x11() {
+#    # Starts the server if it isn't running
+#    if ! pgrep -x "termux-x11" > /dev/null; then
+#        termux-x11 :1 &
+#        sleep 1
+#    fi
+#    export DISPLAY=:1
+#    # Launches whatever app you type after the command
+#    "$@" &
+#}
+
