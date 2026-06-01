@@ -1,5 +1,11 @@
 #!/data/data/com.termux/files/usr/bin/bash
 
+error-msg() {
+	echo "Error installing package please remove it and rerun"
+	sleep 3
+	exit
+}
+
 echo " =========================================="
 echo "         Termux New Install Setup Script"
 echo " =========================================="
@@ -9,15 +15,14 @@ sleep 3
 echo "Installing core tools..."
 sleep 2
 pkg update && pkg upgrade -y
-pkg i micro nano tree cowsay shellcheck starship ossp-uuid -y
-pkg i git wget curl gh gpg apt-transport-https openssh  -y
-pkg i tigervnc-standalone-server -y
-pkg i fastfetch -y || pkg i neofetch -y
+pkg i micro nano tree cowsay shellcheck starship ossp-uuid -y || error-msg()
+pkg i git wget curl gh apt-transport-https openssh  -y || error-msg() 
+pkg i fastfetch -y || pkg i neofetch -y || error-msg()
 pkg i npm -y
 npm install -g bash-language-server 
-pkg i termux-api
+pkg i termux-api -y
 termux-setup-storage
-pkg i proot-distro x11-repo termux-x11-nightly android-tools -y
+pkg i proot-distro x11-repo android-tools -y || error-msg()
 
 
 #   <---setup proot-distro--->
