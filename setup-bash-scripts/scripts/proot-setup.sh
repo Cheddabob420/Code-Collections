@@ -20,7 +20,6 @@ ENV DEBIAN_FRONTEND=noninteractive apt install -y \
     xfce4-goodies \
     xterm \
     dbus-x11 \
-    sudo \
     wget \
     curl \
     git \
@@ -35,7 +34,6 @@ ENV DEBIAN_FRONTEND=noninteractive apt install -y \
     gpg \
     apt-transport-https \
     openssh \
-    tigervnc-standalone-server \
     fastfetch 
 
 echo "Tweaking XFCE4 for performance..."
@@ -52,8 +50,8 @@ sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/
 echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
 
 rm -f packages.microsoft.gpg
-sudo apt update
-sudo apt install -y code
+apt update
+apt install -y code
 
 echo "VS Code installation complete! Run it by typing 'code' in your terminal."
 
@@ -72,18 +70,18 @@ echo "--- Setting Google Chrome as Default ---"
 # Sets the default for the XDG system (Desktop environments)
 xdg-settings set default-web-browser google-chrome.desktop
 # Sets the symbolic link for the 'x-www-browser' command
-sudo update-alternatives --set x-www-browser /usr/bin/google-chrome-stable
+update-alternatives --set x-www-browser /usr/bin/google-chrome-stable
 
 # 3. Purge Firefox and Mozilla artifacts
 echo "--- Removing Firefox and Mozilla leftovers ---"
 
 # Remove Snap version (Common in Ubuntu)
 if snap list | grep -q firefox; then
-    sudo snap remove firefox
+    snap remove firefox
 fi
 
 # Remove APT version (Common in Debian/Mint)
-sudo apt purge firefox-esr firefox -y
+apt purge firefox-esr firefox -y
 
 # Deep clean local configuration folders
 rm -rf ~/.mozilla
