@@ -16,7 +16,7 @@ echo "Installing core tools..."
 sleep 2
 pkg update && pkg upgrade -y
 pkg i micro nano tree cowsay shellcheck starship ossp-uuid -y || error-msg
-pkg i git wget curl gh apt-transport-https openssh -y || error-msg
+pkg i git wget curl gh openssh -y || error-msg
 pkg i fastfetch -y || pkg i neofetch -y || error-msg
 pkg i npm -y
 npm install -g bash-language-server 
