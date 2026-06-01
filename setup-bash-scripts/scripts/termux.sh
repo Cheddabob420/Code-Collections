@@ -15,14 +15,14 @@ sleep 3
 echo "Installing core tools..."
 sleep 2
 pkg update && pkg upgrade -y
-pkg i micro nano tree cowsay shellcheck starship ossp-uuid -y || error-msg()
-pkg i git wget curl gh apt-transport-https openssh -y || error-msg()
-pkg i fastfetch -y || pkg i neofetch -y || error-msg()
+pkg i micro nano tree cowsay shellcheck starship ossp-uuid -y || error-msg
+pkg i git wget curl gh apt-transport-https openssh -y || error-msg
+pkg i fastfetch -y || pkg i neofetch -y || error-msg
 pkg i npm -y
 npm install -g bash-language-server 
 pkg i termux-api -y
 termux-setup-storage
-pkg i proot-distro x11-repo android-tools -y || error-msg()
+pkg i proot-distro x11-repo android-tools -y || error-msg
 
 
 #   <---setup proot-distro--->
