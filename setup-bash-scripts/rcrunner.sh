@@ -38,6 +38,41 @@ download_and_run() {
     fi
 }
 
+# Function to download multiple files (without executing the second one)
+download_for_termux() {
+    local PRIMARY=$1
+    local COMPANION=$2
+    
+    # Download the companion script first
+    echo -e "\n[+] Downloading $COMPANION to temporary storage..."
+    curl -f -sL "$BASE_URL/$COMPANION" -o "$DEST_DIR/$COMPANION"
+    if [ $? -eq 0 ]; then
+        chmod +x "$DEST_DIR/$COMPANION"
+        echo "[+] $COMPANION downloaded."
+    else
+        echo "Error: Could not download $COMPANION."
+        return 1
+    fi
+    
+    # Now download and run the primary script
+    echo -e "\n[+] Downloading $PRIMARY to temporary storage..."
+    curl -f -sL "$BASE_URL/$PRIMARY" -o "$DEST_DIR/$PRIMARY"
+
+    if [ $? -eq 0 ]; then
+        chmod +x "$DEST_DIR/$PRIMARY"
+        echo "[+] Executing $PRIMARY..."
+        echo "------------------------------------------"
+        
+        # Execute the script from the temp directory
+        "$DEST_DIR/$PRIMARY"
+        
+        echo "------------------------------------------"
+        echo "[+] Execution finished."
+    else
+        echo "Error: Could not download $PRIMARY."
+    fi
+}
+
 # --- Menu ---
 clear
 echo "=========================================="
@@ -54,7 +89,7 @@ read -p "Enter choice [1-5]: " choice
 
 case $choice in
     1) download_and_run "mx-debian.sh" ;;
-    2) download_and_run "termux.sh" ;;
+    2) download_for_termux "termux.sh" "proot-setup.sh" ;;
     3) download_and_run "marjano.sh" ;;
     4) download_and_run "fedora.sh" ;;
     5) exit 0 ;;
