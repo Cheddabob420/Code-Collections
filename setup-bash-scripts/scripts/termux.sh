@@ -28,11 +28,59 @@ pkg i proot-distro x11-repo android-tools -y || error-msg
 #   <---setup proot-distro--->
 proot-distro install debian
 echo "Executing internal desktop environment installation..."
-proot-distro login debian --shared-tmp -- bash /data/data/com.termux/files/home/proot-setup.sh
+proot-distro login debian -- bash -c "apt install xfce4 xfce4-goodies xterm dbus-x11 wget curl git micro nano tree cowsay shellcheck starship ossp-uuid gh openssh fastfetch -y"
+
 wait
-echo "Cleaning up setup scripts..."
-sleep 2
-rm ~/proot-setup.sh
+
+proot-distro login debian -- bash -c "wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | tee /etc/apt/sources.list.d/vscode.list > /dev/null
+
+rm -f packages.microsoft.gpg
+apt update
+apt install -y code
+
+echo "VS Code installation complete! Run it by typing 'code' in your terminal.""
+
+wait
+
+proot-distro login debian -- bash -c "TEMP_DIR=$(mktemp -d)
+cd "$TEMP_DIR" || exit
+
+echo "--- Starting Google Chrome Installation ---"
+wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+apt update && apt install ./google-chrome-stable_current_amd64.deb -y
+
+# 2. Set Chrome as the Default Browser
+echo "--- Setting Google Chrome as Default ---"
+# Sets the default for the XDG system (Desktop environments)
+xdg-settings set default-web-browser google-chrome.desktop
+# Sets the symbolic link for the 'x-www-browser' command
+update-alternatives --set x-www-browser /usr/bin/google-chrome-stable
+
+# 3. Purge Firefox and Mozilla artifacts
+echo "--- Removing Firefox and Mozilla leftovers ---"
+
+# Remove Snap version (Common in Ubuntu)
+if snap list | grep -q firefox; then
+    snap remove firefox
+fi
+
+# Remove APT version (Common in Debian/Mint)
+apt purge firefox-esr firefox -y
+
+# Deep clean local configuration folders
+rm -rf ~/.mozilla
+rm -rf ~/.cache/mozilla
+rm -rf /usr/lib/firefox
+rm -rf /etc/firefox
+
+# 4. Cleanup temp files
+cd ~
+rm -rf "$TEMP_DIR"
+
+echo "--- Migration Complete! Google Chrome is now your default. ---"
+google-chrome --version"
 
 
 # <---Setup Nerd Font--->
@@ -210,4 +258,3 @@ EOF
 #    # Launches whatever app you type after the command
 #    "$@" &
 #}
-
