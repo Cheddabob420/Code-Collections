@@ -28,7 +28,8 @@ pkg i proot-distro x11-repo android-tools -y || error-msg
 #   <---setup proot-distro--->
 proot-distro install debian
 echo "Executing internal desktop environment installation..."
-proot-distro login debian -- bash -c "apt install xfce4 xfce4-goodies xterm dbus-x11 wget curl git micro nano tree cowsay shellcheck starship ossp-uuid gh openssh fastfetch -y"
+proot-distro login debian -- bash -c "apt update && apt dist-upgrade -y"
+proot-distro login debian -- bash -c "apt install xfce4 xfce4-goodies xterm dbus-x11 wget curl git micro nano tree cowsay shellcheck starship gh fastfetch -y"
 
 wait
 
