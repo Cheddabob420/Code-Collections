@@ -143,7 +143,7 @@ fi
 mkdir -v $HOME/Projects
 mkdir -v $HOME/Programs
 mkdir -v $HOME/Projects/Lua
-mkdir -v $HOME/Projects/Python
+mkdir -v $HOME/Projects/Python/osrs
 mkdir -v $HOME/Projects/MicroWorks
 mkdir -v $HOME/Projects/HTML
 mkdir -v $HOME/Projects/C
@@ -195,35 +195,37 @@ eval "$(starship init bash)"
 
 
 start_desktop(){
-    # Starup
+    # 1. Force kill any stuck X11 or Termux-X11 processes
     killall -9 termux-x11 Xwayland 2>/dev/null
-    rm -rf /tmp/.X11-unix/X1 2>/dev/null
-    
-    termux-x11 :1 -xstartup "echo launcher" &
-    sleep 1.5
-    
-    am start --user 0 -n com.termux.x11/com.termux.x11.MainActivity > /dev/null 2>&1
-    
-    proot-distro login debian --shared-tmp --env DISPLAY=:1 -- dbus-launch --exit-with-session xfce4-session
-    
-    # Shutdown
-    echo "XFCE4 session closed. Initiating container shutdown..."
-    
-    killall -9 termux-x11 Xwayland 2>/dev/null
-    
-    kill -9 $(pgrep -f "proot") 2>/dev/null
-    
-    rm -rf /tmp/.X11-unix/X1 2>/dev/null
-    
-    echo "Container and X11 server stopped successfully. Safe to close Termux."
-}
 
-stop_desktop() {
-    echo "Force shutting down PRoot and X11..."
-    killall -9 termux-x11 Xwayland 2>/dev/null
-    kill -9 $(pgrep -f "proot") 2>/dev/null
-    rm -rf /tmp/.X11-unix/X1 2>/dev/null
-    echo "Done."
+    # 2. Aggressively clear out old X11 socket lock files
+    rm -rf /tmp/.X11-unix
+    rm -rf $PREFIX/tmp/.X11-unix
+    rm -f /tmp/.X1-lock 2>/dev/null
+    rm -f $PREFIX/tmp/.X1-lock 2>/dev/null
+    rm -f /tmp/.X2-lock 2>/dev/null
+    rm -f $PREFIX/tmp/.X2-lock 2>/dev/null
+
+    # Re-create clean socket directories
+    mkdir -p /tmp/.X11-unix
+    mkdir -p $PREFIX/tmp/.X11-unix
+    chmod 1777 /tmp/.X11-unix
+    chmod 1777 $PREFIX/tmp/.X11-unix
+
+    # 3. Start termux-x11 cleanly on display :2 (bypasses any cached lock issues)
+    termux-x11 :2 &
+    sleep 2
+
+    # 4. Wake up the Android X11 App
+    am start --user 0 -n com.termux.x11/com.termux.x11.MainActivity > /dev/null 2>&1
+    sleep 1.5
+
+    # 5. Launch Debian XFCE explicitly pointing to :2
+    proot-distro login debian --shared-tmp --user root -- bash -c "
+        export DISPLAY=:2
+        export PULSE_SERVER=127.0.0.1
+        dbus-launch --exit-with-session xfce4-session
+    "
 }
 
 fastfetch
