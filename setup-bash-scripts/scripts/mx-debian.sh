@@ -34,7 +34,7 @@ echo "Installing core tools..."
 # Install the basics
 
 sudo apt update && sudo apt dist-upgrade -y
-sudo apt install -y micro nano tree cowsay shellcheck starship ossp-uuid wget curl gh ssh || errorMsg
+sudo apt install -y micro nano tree cowsay shellcheck starship python3-pip ossp-uuid wget curl gh ssh || errorMsg
 sudo apt install fastfetch -y || sudo apt install neofetch -y
 
 
