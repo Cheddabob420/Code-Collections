@@ -35,7 +35,7 @@ echo -e "\033[0;36mInstalling core tools...\033[0m"
 # Install the basics
 
 sudo apt update && sudo apt dist-upgrade -y
-sudo apt install -y micro nano tree cowsay shellcheck starship python3-pip ossp-uuid wget curl gh ssh || errorMsg
+sudo apt install -y micro nano tree cowsay shellcheck starship python3-pip bat wget curl gh ssh || errorMsg
 sudo apt install fastfetch -y || sudo apt install neofetch -y
 
 
@@ -83,6 +83,7 @@ alias gp='git pull'
 alias updater='sudo apt update && sudo apt dist-upgrade -y && flatpak update'
 alias autoremove='sudo apt autoremove -y'
 alias pyven='source $HOME/.venv/bin/activate'
+cat='batcat'
 USER_NAME="$(whoami)"
 SHELL_RC="$HOME/.shell_rc_content"
 ALIASES="$HOME/.aliases"
