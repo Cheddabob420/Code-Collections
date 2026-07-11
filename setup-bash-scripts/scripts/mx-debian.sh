@@ -1,35 +1,36 @@
 #!/bin/bash
 
 errorMsg() {
-        echo "Error Installing Package!"
+        echo -e "\033[0;31mError Installing Package!\033[0m"
         exit 1
 }
 
 create_venv() {
-    echo "Creating python environment at $python_env..."
+    echo -e "\033[0;32mCreating python environment at $python_env...\033[0m"
     
     # Try creating the venv
     if ! python3 -m venv "$python_env" 2>/dev/null; then
-        echo "venv module missing. Attempting to install the required system package..."
+        echo -e "\033[0;33mVenv module missing. Attempting to install the required system package...\033[0m"
         
         # 1. Get the version (e.g., "3.11")
         PY_VER=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
         VENV_PKG="python${PY_VER}-venv"
         
         # 2. Attempt to install the specific package
-        echo "Running: sudo apt update && sudo apt install -y $VENV_PKG"
+        echo -e "\033[0;36mRunning: sudo apt update && sudo apt install -y $VENV_PKG\033[0m"
         if sudo apt update && sudo apt install -y "$VENV_PKG"; then
             # 3. Retry the venv creation
             python3 -m venv "$python_env"
         else
-            echo "Error: Failed to install $VENV_PKG. Please install it manually."
+            echo -e "\033[0;31mError: Failed to install $VENV_PKG. Please install it manually.\033[0m"
             exit 1
         fi
     fi
 }
 
 # --- 1. Package Installation ---
-echo "Installing core tools..."
+echo -e "\033[0;36mInstalling core tools...\033[0m"
+
 
 # Install the basics
 
@@ -44,10 +45,10 @@ sudo npm install -g bash-language-server || errorMsg
 
 # Add Flatpak Repos
 if ! flatpak remotes | grep -q "flathub"; then
-    echo "Adding Flathub repository..."
+    echo -e "\033[0;35mAdding Flathub repository...\033[0m"
     flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 else
-    echo "Flathub already configured. Skipping."
+    echo -e "\033[0;32mFlathub already configured. Skipping.\033[0m"
 fi
 
 
@@ -63,7 +64,7 @@ mkdir -v $HOME/Projects/Jupyter
 
 # --- 2. Configuration Setup ---
 BASHRC="$HOME/.bashrc"
-echo "Configuring $BASHRC..."
+echo -e "\033[0;33mConfiguring $BASHRC...\033[0m"
 
 # Create a backup with a timestamp
 cp "$BASHRC" "$BASHRC.bak.$(date +%F_%T)"
@@ -119,7 +120,7 @@ echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft
 rm -f packages.microsoft.gpg
 sudo apt update
 sudo apt install -y code
-echo "VS Code installation complete! Run it by typing 'code' in your terminal."
+echo -e "\033[0;34mVS Code installation complete! Run it by typing 'code' in your terminal.\033[0m"
 
 wait
 
@@ -129,19 +130,19 @@ wait
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit
 
-echo "--- Starting Google Chrome Installation ---"
+echo -e "\033[0;33m--- Starting Google Chrome Installation ---\033[0m"
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo apt update && sudo apt install ./google-chrome-stable_current_amd64.deb -y
 
 # 2. Set Chrome as the Default Browser
-echo "--- Setting Google Chrome as Default ---"
+echo -e "\033[0;37m--- Setting Google Chrome as Default ---\033[0m"
 # Sets the default for the XDG system (Desktop environments)
 xdg-settings set default-web-browser google-chrome.desktop
 # Sets the symbolic link for the 'x-www-browser' command
 sudo update-alternatives --set x-www-browser /usr/bin/google-chrome-stable
 
 # 3. Purge Firefox and Mozilla artifacts
-echo "--- Removing Firefox and Mozilla leftovers ---"
+echo -e "\033[0;31m--- Removing Firefox and Mozilla leftovers ---\033[0m"
 
 # Remove Snap version (Common in Ubuntu)
 if snap list | grep -q firefox; then
@@ -161,11 +162,11 @@ sudo rm -rf /etc/firefox
 cd ~
 rm -rf "$TEMP_DIR"
 
-echo "--- Migration Complete! Google Chrome is now your default. ---"
+echo -e "\033[0;32m--- Migration Complete! Google Chrome is now your default. ---\033[0m"
 google-chrome --version
 
 # Setup chrome before gh auth
-echo "Please open chrome and sign in before going any further to make github auth much easier."
+echo -e "\033[0;35mPlease open chrome and sign in before going any further to make github auth much easier.\033[0m"
 read -n 1 -s -p "Press any key to continue..."
 echo ""
 
@@ -173,4 +174,4 @@ echo ""
 gh auth login
 source ~/.bashrc
 wait
-echo "Bashrc Setup Complete!"
+echo -e "\033[0;32mBashrc Setup Complete!\033[0m"
