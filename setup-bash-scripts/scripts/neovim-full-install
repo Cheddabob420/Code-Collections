@@ -1,0 +1,194 @@
+#!/usr/bin/env bash
+set -euo pipefail # Fail fast on errors, undefined vars, or pipe errors
+
+echo "==> Downloading and installing Neovim..."
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
+sudo rm -rf /opt/nvim-linux-x86_64
+sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
+rm nvim-linux-x86_64.tar.gz
+
+# Correctly targets the current user's .bashrc
+if ! grep -q '/opt/nvim-linux-x86_64/bin' "$HOME/.bashrc"; then
+  cp "$HOME/.bashrc" "$HOME/.bashrc.nvimbak"
+  echo 'export PATH="$PATH:/opt/nvim-linux-x86_64/bin"' >> "$HOME/.bashrc"
+fi
+
+echo "==> Setting up Griffo APT repo..."
+sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://debian.griffo.io/EA0F721D231FDD3A0A17B9AC7808B4DD62C41256.asc |
+  sudo gpg --dearmor --yes -o /etc/apt/keyrings/debian.griffo.io.gpg
+
+# Fallback codename check if lsb_release isn't installed
+CODENAME=$(lsb_release -sc 2>/dev/null || . /etc/os-release && echo "$VERSION_CODENAME")
+
+echo "deb [signed-by=/etc/apt/keyrings/debian.griffo.io.gpg] https://debian.griffo.io/apt ${CODENAME} main" |
+  sudo tee /etc/apt/sources.list.d/debian.griffo.io.list >/dev/null
+
+sudo apt update
+sudo apt install zig ghostty lazygit yazi viu eza uv fzf zoxide bun tigerbeetle deno forgejo forgejo-runner helix jujutsu zellij starship atuin k9s headscale garage tree-sitter-cli fd-find -y
+
+echo "==> Backing up existing Neovim configs..."
+[ -d ~/.config/nvim ] && mv ~/.config/nvim{,.bak"$(date +%s)"}
+[ -d ~/.local/share/nvim ] && mv ~/.local/share/nvim{,.bak"$(date +%s)"}
+[ -d ~/.local/state/nvim ] && mv ~/.local/state/nvim{,.bak"$(date +%s)"}
+[ -d ~/.cache/nvim ] && mv ~/.cache/nvim{,.bak"$(date +%s)"}
+
+echo "==> Cloning LazyVim Starter..."
+git clone https://github.com/LazyVim/starter ~/.config/nvim
+rm -rf ~/.config/nvim/.git
+
+echo "==> NeoVim Setup Complete!"
+
+CONFIG_DIR="$HOME/.config/nvim/lua/plugins"
+KEYMAP_DIR="$HOME/.config/nvim/lua/config"
+GHOSTTY_DIR="$HOME/.config/ghostty"
+STARSHIP_DIR="$HOME/.config/starship.toml"
+mkdir -p "$CONFIG_DIR" "$KEYMAP_DIR" "$GHOSTTY_DIR"
+
+COLORMAP="$CONFIG_DIR/colorscheme.lua"
+HARPOON="$CONFIG_DIR/harpoon.lua"
+KEYMAP="$KEYMAP_DIR/keymaps.lua"
+GHOSTTY_CONFIG="$GHOSTTY_DIR/config"
+
+# Harpoon 2 setup
+cat <<'EOF' > "$HARPOON"
+return {
+  "ThePrimeagen/harpoon",
+  branch = "harpoon2",
+  dependencies = { "nvim-lua/plenary.nvim", "nvim-telescope/telescope.nvim" },
+  keys = function()
+    local harpoon = require("harpoon")
+    local conf = require("telescope.config").values
+
+    local function toggle_telescope(harpoon_files)
+      local file_paths = {}
+      for _, item in ipairs(harpoon_files.items) do
+        table.insert(file_paths, item.value)
+      end
+
+      require("telescope.pickers").new({}, {
+        prompt_title = "Harpoon",
+        finder = require("telescope.finders").new_table({
+          results = file_paths,
+        }),
+        previewer = conf.file_previewer({}),
+        sorter = conf.generic_sorter({}),
+      }):find()
+    end
+
+    return {
+      { "<leader>A", function() harpoon:list():add() end, desc = "Harpoon Add File" },
+      { "<leader>H", function() harpoon.ui:toggle_quick_menu(harpoon:list()) end, desc = "Harpoon Menu" },
+      { "<leader>fH", function() toggle_telescope(harpoon:list()) end, desc = "Harpoon List (Telescope)" },
+
+      { "<C-1>", function() harpoon:list():select(1) end, desc = "Harpoon File 1" },
+      { "<C-2>", function() harpoon:list():select(2) end, desc = "Harpoon File 2" },
+      { "<C-3>", function() harpoon:list():select(3) end, desc = "Harpoon File 3" },
+      { "<C-4>", function() harpoon:list():select(4) end, desc = "Harpoon File 4" },
+    }
+  end,
+  config = function()
+    require("harpoon"):setup()
+  end,
+}
+EOF
+
+# Custom keymaps
+cat <<'EOF' > "$KEYMAP"
+vim.keymap.set("n", "<leader>fd", function()
+  require("telescope.builtin").find_files({
+    find_command = { "fd", "--type", "d", "--hidden", "--exclude", ".git" },
+    prompt_title = "Find Directories",
+  })
+end, { desc = "Find Directories" })
+EOF
+
+# Theme / Colorscheme setup
+cat <<'EOF' > "$COLORMAP"
+return {
+  {
+    "audibleblink/hackthebox.vim",
+    lazy = false,
+    priority = 1000,
+  },
+  {
+    "xiyaowong/transparent.nvim",
+    lazy = false,
+    opts = {
+      extra_groups = { "NormalFloat", "NvimTreeNormal" },
+    },
+  },
+  {
+    "LazyVim/LazyVim",
+    opts = {
+      colorscheme = "hackthebox",
+    },
+  },
+}
+EOF
+
+# Ghostty terminal config
+cat <<'EOF' > "$GHOSTTY_CONFIG"
+background = 000000
+foreground = e1e6ef
+cursor-color = 9fef00
+selection-background = 293b51
+selection-foreground = 9fef00
+
+# 16-Color Palette (HTB Hex Codes)
+palette = 0=#101a26
+palette = 1=#ff5252
+palette = 2=#9fef00
+palette = 3=#ffb454
+palette = 4=#5cb2ff
+palette = 5=#d38aea
+palette = 6=#50e3c2
+palette = 7=#e1e6ef
+palette = 8=#334b68
+palette = 9=#ff6e6e
+palette = 10=#aef226
+palette = 11=#ffc777
+palette = 12=#70beff
+palette = 13=#de9df2
+palette = 14=#6beac9
+palette = 15=#ffffff
+
+# Transparency level
+background-opacity = 0.60
+maximize = true
+EOF
+
+
+cat <<'EOF' > "$STARSHIP_DIR"
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Keep everything on a single line
+add_newline = false
+
+# Set the primary command character to an HTB theme color
+[character]
+success_symbol = '[➜](bold #99cc33)'
+error_symbol = '[✗](bold #cc0000)'
+
+# Customize the Directory block to look clean
+[directory]
+format = '[$path](bold #99cc33) '
+truncation_length = 3
+truncation_symbol = '…/'
+
+# Disable unneeded modules for a clean, hacker-style terminal
+[package]
+disabled = true
+[git_branch]
+disabled = true
+[git_status]
+disabled = true
+[nodejs]
+disabled = true
+[python]
+disabled = true
+[golang]
+disabled = true
+EOF
+echo "==> Configuration applied successfully!"
