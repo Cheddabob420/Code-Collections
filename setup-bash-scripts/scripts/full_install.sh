@@ -161,7 +161,7 @@ cp "$BASHRC" "$BASHRC.bak.$(date +%F_%T)"
 
 # Note: Use 'EOF' to prevent the script from expanding $HOME or $PS1 now
 cat << 'EOF' > "$BASHRC"
-export EDITOR='nano'
+export EDITOR='nvim'
 export HISTSIZE=10000
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
