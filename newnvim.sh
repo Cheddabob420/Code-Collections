@@ -44,23 +44,14 @@ background-opacity = 0.90
 EOF
   echo "Created initial Ghostty config at ~/.config/ghostty/config"
 fi
+# ----------------------------------------------------------------------
+# Ghostty Installation (Debian / MX Linux)
+# ----------------------------------------------------------------------
+echo "==> Installing Ghostty..."
 
-echo "==> 5. Installing Ghostty..."
-# Check if ghostty is already installed binary
 if command -v ghostty &>/dev/null; then
   echo "Ghostty is already installed!"
 else
-  echo "Attempting Ghostty AppImage / Binary install..."
-  # Download official community appimage or binary asset
-  GHOSTTY_APPIMAGE_URL="https://github.com/pscharr/ghostty-appimage/releases/latest/download/Ghostty-x86_64.AppImage"
-  if curl -sIL "$GHOSTTY_APPIMAGE_URL" | grep -q "200 OK\|302 Found"; then
-    sudo curl -L "$GHOSTTY_APPIMAGE_URL" -o /usr/local/bin/ghostty
-    sudo chmod +x /usr/local/bin/ghostty
-    echo "Ghostty AppImage installed to /usr/local/bin/ghostty"
-  else
-    echo "WARNING: Could not fetch Ghostty AppImage automatically."
-    echo "You may need to build Ghostty via Zig or install a flatpak: 'flatpak install com.mitchellh.ghostty'"
-  fi
+  # Install the community-maintained pre-built .deb helper for Debian/Ubuntu
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/mkasberg/ghostty-ubuntu/HEAD/install.sh)"
 fi
-
-echo "==> Complete! Check ~/.config/nvim and ~/.config/ghostty."
