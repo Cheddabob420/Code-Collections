@@ -1,43 +1,66 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Installing system dependencies (git, build tools, ripgrep, fd)..."
+echo "==> 1. Installing core dependencies..."
 sudo apt update
-sudo apt install -y git build-essential curl ripgrep fd-find
+sudo apt install -y git build-essential curl ripgrep fd-find appstream libgtk-4-dev libadwaita-1-dev
 
-echo "==> Downloading and installing Neovim..."
+echo "==> 2. Installing Neovim..."
 curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz
 sudo rm -rf /opt/nvim-linux-x86_64
 sudo tar -C /opt -xzf nvim-linux-x86_64.tar.gz
 rm nvim-linux-x86_64.tar.gz
 
-# Ensure Neovim binary is in PATH
+# Add Neovim to PATH if not present
 if ! grep -q '/opt/nvim-linux-x86_64/bin' "$HOME/.bashrc"; then
   echo 'export PATH="$PATH:/opt/nvim-linux-x86_64/bin"' >> "$HOME/.bashrc"
 fi
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
 
-echo "==> Installing Ghostty terminal..."
-# Check architecture and install official release binary bundle
-ARCH=$(uname -m)
-if [ "$ARCH" = "x86_64" ]; then
-  GHOSTTY_URL=$(curl -s https://api.github.com/repos/ghostty-org/ghostty/releases/latest | grep "browser_download_url.*linux-amd64.tar.gz" | cut -d '"' -f 4)
-  if [ -n "$GHOSTTY_URL" ]; then
-    curl -LO "$GHOSTTY_URL"
-    sudo tar -C /usr/local -xzf ghostty-*.tar.gz
-    rm ghostty-*.tar.gz
+echo "==> 3. Setting up LazyVim..."
+# Ensure config dir exists and backup any existing nvim folder
+mkdir -p "$HOME/.config"
+if [ -d "$HOME/.config/nvim" ]; then
+  mv "$HOME/.config/nvim" "$HOME/.config/nvim.bak$(date +%s)"
+fi
+rm -rf "$HOME/.local/share/nvim" "$HOME/.local/state/nvim" "$HOME/.cache/nvim"
+
+# Explicit clone with failure reporting
+if git clone https://github.com/LazyVim/starter "$HOME/.config/nvim"; then
+  rm -rf "$HOME/.config/nvim/.git"
+  echo "LazyVim starter successfully cloned to ~/.config/nvim!"
+else
+  echo "ERROR: Failed to clone LazyVim repository!" >&2
+  exit 1
+fi
+
+echo "==> 4. Setting up Ghostty configuration structure..."
+mkdir -p "$HOME/.config/ghostty"
+if [ ! -f "$HOME/.config/ghostty/config" ]; then
+  cat <<'EOF' > "$HOME/.config/ghostty/config"
+# Ghostty Configuration
+theme = dark
+background-opacity = 0.90
+EOF
+  echo "Created initial Ghostty config at ~/.config/ghostty/config"
+fi
+
+echo "==> 5. Installing Ghostty..."
+# Check if ghostty is already installed binary
+if command -v ghostty &>/dev/null; then
+  echo "Ghostty is already installed!"
+else
+  echo "Attempting Ghostty AppImage / Binary install..."
+  # Download official community appimage or binary asset
+  GHOSTTY_APPIMAGE_URL="https://github.com/pscharr/ghostty-appimage/releases/latest/download/Ghostty-x86_64.AppImage"
+  if curl -sIL "$GHOSTTY_APPIMAGE_URL" | grep -q "200 OK\|302 Found"; then
+    sudo curl -L "$GHOSTTY_APPIMAGE_URL" -o /usr/local/bin/ghostty
+    sudo chmod +x /usr/local/bin/ghostty
+    echo "Ghostty AppImage installed to /usr/local/bin/ghostty"
   else
-    echo "Could not auto-fetch Ghostty binary tarball. Skipping Ghostty installation."
+    echo "WARNING: Could not fetch Ghostty AppImage automatically."
+    echo "You may need to build Ghostty via Zig or install a flatpak: 'flatpak install com.mitchellh.ghostty'"
   fi
 fi
 
-echo "==> Backing up existing Neovim configs..."
-[ -d ~/.config/nvim ] && mv ~/.config/nvim{,.bak"$(date +%s)"}
-[ -d ~/.local/share/nvim ] && mv ~/.local/share/nvim{,.bak"$(date +%s)"}
-[ -d ~/.local/state/nvim ] && mv ~/.local/state/nvim{,.bak"$(date +%s)"}
-[ -d ~/.cache/nvim ] && mv ~/.cache/nvim{,.bak"$(date +%s)"}
-
-echo "==> Cloning fresh LazyVim Starter..."
-git clone https://github.com/LazyVim/starter ~/.config/nvim
-rm -rf ~/.config/nvim/.git
-
-echo "==> Setup complete! Restart your shell or run 'source ~/.bashrc'."
+echo "==> Complete! Check ~/.config/nvim and ~/.config/ghostty."
