@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -euo pipefail
 ############################################
 #            Functions                     #
 ############################################
@@ -74,7 +75,8 @@ echo "----------------------------------------"
 # Dispatch commands based on detected OS
 case "$OS_ID" in
     *debian*|*ubuntu*|*raspbian*|*pop*)
-        echo "Running Debian/Ubuntu-specific commands..."set -euo pipefail
+        echo "Running Debian/Ubuntu-specific commands..."
+
         echo "==> 1. Installing core build dependencies & CLI tools..."
         sudo apt update
         sudo apt install -y git build-essential curl ripgrep fd-find
@@ -99,36 +101,35 @@ case "$OS_ID" in
         mkdir -p "$HOME/.config/ghostty"
         if [ ! -f "$HOME/.config/ghostty/config" ]; then
           cat <<'EOF' > "$HOME/.config/ghostty/config"
-          # Ghostty Configuration
-          background = 000000
-          foreground = e1e6ef
-          cursor-color = 9fef00
-          selection-background = 293b51
-          selection-foreground = 9fef00
+# Ghostty Configuration
+background = 000000
+foreground = e1e6ef
+cursor-color = 9fef00
+selection-background = 293b51
+selection-foreground = 9fef00
 
-          # 16-Color Palette (HTB Hex Codes)
-          palette = 0=#101a26
-          palette = 1=#ff5252
-          palette = 2=#9fef00
-          palette = 3=#ffb454
-          palette = 4=#5cb2ff
-          palette = 5=#d38aea
-          palette = 6=#50e3c2
-          palette = 7=#e1e6ef
-          palette = 8=#334b68
-          palette = 9=#ff6e6e
-          palette = 10=#aef226
-          palette = 11=#ffc777
-          palette = 12=#70beff
-          palette = 13=#de9df2
-          palette = 14=#6beac9
-          palette = 15=#ffffff
+# 16-Color Palette (HTB Hex Codes)
+palette = 0=#101a26
+palette = 1=#ff5252
+palette = 2=#9fef00
+palette = 3=#ffb454
+palette = 4=#5cb2ff
+palette = 5=#d38aea
+palette = 6=#50e3c2
+palette = 7=#e1e6ef
+palette = 8=#334b68
+palette = 9=#ff6e6e
+palette = 10=#aef226
+palette = 11=#ffc777
+palette = 12=#70beff
+palette = 13=#de9df2
+palette = 14=#6beac9
+palette = 15=#ffffff
 
-          # Transparency level
-          background-opacity = 0.60
-          maximize = true
-            
-          EOF
+# Transparency level
+background-opacity = 0.60
+maximize = true
+EOF
         fi
 
         echo "==> 5. Installing Ghostty..."
