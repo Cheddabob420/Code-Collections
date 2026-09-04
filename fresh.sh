@@ -142,15 +142,15 @@ EOF
         ;;
     *arch*|*cachyos*|*manjaro*)
         echo "Running Arch-based commands..."
-          sudo pacman -Syu --noconfirm
+        sudo pacman -Syu --noconfirm
         ;;
     *rhel*|*centos*|*fedora*|*rocky*|*almalinux*)
         echo "Running RHEL/Fedora-specific commands..."
-        	sudo dnf update -y
+        sudo dnf update -y
         ;;
     *alpine*)
         echo "Running Alpine-specific commands..."
-        	apk update
+        apk update
         ;;
     *darwin*)
         echo "Running macOS-specific commands..."
