@@ -1,0 +1,142 @@
+/* Madlibs For Kids - pink, purple and cyan theme */
+
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap");
+
+/* Colors live here, so you can tweak them in one spot */
+:root {
+    --pink: #ff5fa2;
+    --purple: #9b5de5;
+    --cyan: #00d1e0;
+    --light-pink: #ffe3f1;
+    --light-cyan: #dcfbff;
+    --ink: #3d2466;
+}
+
+/* The whole window: a soft pink-purple-cyan background */
+html {
+    min-height: 100%;
+    background: linear-gradient(135deg, var(--pink), var(--purple), var(--cyan));
+}
+
+/* The body becomes a big white card in the middle */
+body {
+    font-family: "Fredoka", "Comic Sans MS", "Trebuchet MS", sans-serif;
+    font-size: 20px;
+    color: var(--ink);
+    background: white;
+    max-width: 640px;
+    margin: 32px auto;
+    padding: 24px 28px 32px;
+    border-radius: 28px;
+    box-shadow: 0 12px 40px rgba(61, 36, 102, 0.35);
+}
+
+/* Big rainbow title */
+h1 {
+    font-size: 2.6rem;
+    text-align: center;
+    margin: 0 0 4px;
+    background: linear-gradient(90deg, var(--pink), var(--purple), var(--cyan));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+h1 + p {
+    text-align: center;
+    margin-top: 0;
+}
+
+/* Each label sits on its own line above its box */
+label {
+    display: block;
+    font-weight: 600;
+    color: var(--purple);
+    margin: 14px 0 6px;
+}
+
+/* Typing boxes and the story menu */
+input,
+select {
+    width: 100%;
+    box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1.1rem;
+    color: var(--ink);
+    padding: 10px 14px;
+    border: 3px solid var(--cyan);
+    border-radius: 16px;
+    background: var(--light-cyan);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+select {
+    background: var(--light-pink);
+    border-color: var(--pink);
+    cursor: pointer;
+}
+
+/* Glow pink when she clicks into a box */
+input:focus,
+select:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 4px rgba(255, 95, 162, 0.3);
+    background: white;
+}
+
+/* The Make My Story button */
+button {
+    display: block;
+    width: 100%;
+    margin-top: 12px;
+    font-family: inherit;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--pink), var(--purple));
+    box-shadow: 0 6px 0 #6a3aa8;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+button:hover {
+    transform: translateY(-2px) scale(1.02);
+}
+
+/* Squish down when pressed, like a squishy! */
+button:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #6a3aa8;
+}
+
+/* The finished story */
+#story {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    margin-top: 24px;
+    padding: 20px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, var(--light-pink), var(--light-cyan));
+    border: 3px dashed var(--purple);
+}
+
+/* Hide the story box until there is a story in it */
+#story:empty {
+    display: none;
+}
+
+/* Fit nicely on small screens */
+@media (max-width: 500px) {
+    body {
+        margin: 12px;
+        padding: 18px;
+        font-size: 18px;
+    }
+    h1 {
+        font-size: 2rem;
+    }
+}

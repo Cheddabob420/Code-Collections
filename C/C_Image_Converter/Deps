@@ -1,0 +1,13 @@
+Arch:
+sudo pacman -S libwebp
+
+Linux (Ubuntu / Debian):
+sudo apt update
+sudo apt install libwebp-dev
+
+macOS (Using Homebrew):
+brew install webp
+
+Windows (Using MSYS2 / MinGW):
+pacman -S mingw-w64-ucrt-x86_64-libwebp
+

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MadLibs For Kids</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+    <body> 
+        <h1>Madlibs Game</h1> 
+        <p>Fill in the words to make a funny story!</p>
+        <label for="storyPick">Pick A Story:</label>
+    <select id="storyPick" onchange="showBlanks()">
+        <option value="zoo">The Zoo Mystery</option>
+        <option value="slime">The Great Goo Spill</option>
+        <option value="space">The Great Beyond</option>
+        <option value="pirate">The Pirate Treasure Hunt</option>
+        <option value="magic">Glitter Magic</option>
+    </select>
+    <br>
+    <div id="blankarea"></div>  
+    <br>
+    <button onclick="makeStory()">Make My Story!</button>
+    <br>
+    <p id="story"></p>
+    <script src="script.js"></script>
+    
+</body>
+</html>
