@@ -1,1 +1,1 @@
-# A collection of scripts that i find useful
+# A collection of configs and programs that i have built over time.
