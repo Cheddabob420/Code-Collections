@@ -1,0 +1,32 @@
+let students = 30;
+
+students = students + 2;
+console.log(students);
+students = students - 4;
+console.log(students);
+students = students * 5;
+console.log(students);
+students = students / 4;
+console.log(students);
+students = students ** 3;
+console.log(students);
+students = students % 2;
+console.log(students);
+students = 30;
+students += 2;
+console.log(students);
+students -= 4;
+console.log(students);
+students *= 5;
+console.log(students);
+students /= 4;
+console.log(students);
+students **= 3;
+console.log(students);
+students %= 2;
+console.log(students);
+students = 30
+students++;
+console.log(students);
+students--;
+console.log(students);

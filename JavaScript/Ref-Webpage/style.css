@@ -1,0 +1,32 @@
+h1{
+    text-align: center;
+    color: rgb(0, 255, 0);
+}
+h3{
+    text-align: center;
+    font-size: 2rem;
+}
+body{
+    background-color: #000;
+}
+h2{
+    text-align: center;
+    color: rgb(0, 255, 0);
+    font-size: 3rem;
+}
+#tableOfContents{
+    color: yellow;
+    font-size: 1.3rem;
+}
+#tableOfContents a:link{
+    color: yellow;
+}
+#tableOfContents a:visited{
+    color: rgb(0, 255, 0);
+}
+#tableOfContents a:hover{
+    color: blue;
+}
+#tableOfContents li{
+    margin-bottom: 15px;
+}
